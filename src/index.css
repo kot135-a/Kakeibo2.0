@@ -1,0 +1,183 @@
+@import url('https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=Yomogi&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Klee One', 'Hiragino Maru Gothic Pro', sans-serif;
+  --font-hand: 'Yomogi', 'Klee One', cursive;
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #fdf8f0;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #e5e5ea;
+  border-radius: 99px;
+}
+
+@keyframes crack {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+
+  20% {
+    transform: scale(1.04) rotate(-1.5deg);
+  }
+
+  40% {
+    transform: scale(0.97) rotate(1deg);
+  }
+
+  60% {
+    transform: scale(1.02) rotate(-0.5deg);
+  }
+
+  80% {
+    transform: scale(0.99) rotate(0.5deg);
+  }
+
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes shatter {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.6;
+    transform: scale(1.06);
+    filter: blur(1px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: none;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-crack {
+  animation: crack 0.45s ease-in-out;
+}
+
+.animate-shatter {
+  animation: shatter 0.5s ease-in-out;
+}
+
+.slide-up {
+  animation: slideUp 0.3s ease-out both;
+}
+
+/* お金が飛ぶアニメーション */
+@keyframes coinFly {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1.5) rotate(0deg);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx), var(--ty)) scale(0.7) rotate(var(--r));
+  }
+}
+
+.coin-fly {
+  animation: coinFly 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* 貯金箱にコインが入るアニメーション */
+@keyframes coinDrop {
+  0% {
+    opacity: 1;
+    transform: translateY(var(--from-y)) scale(1);
+  }
+
+  80% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(0) scale(0.3);
+  }
+}
+
+.coin-drop {
+  animation: coinDrop 0.6s ease-in forwards;
+}
+
+@keyframes piggyBounce {
+
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+
+  25% {
+    transform: scale(1.12) rotate(-4deg);
+  }
+
+  50% {
+    transform: scale(1.08) rotate(3deg);
+  }
+
+  75% {
+    transform: scale(1.05) rotate(-2deg);
+  }
+}
+
+.piggy-bounce {
+  animation: piggyBounce 0.6s ease-in-out;
+}
+
+@keyframes streakPop {
+  0% {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+
+  60% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.streak-pop {
+  animation: streakPop 0.4s ease-out both;
+}

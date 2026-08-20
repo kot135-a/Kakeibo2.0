@@ -1,0 +1,10 @@
+{
+  "description": "Track and manage your household finances effortlessly with an intuitive iOS-style budget app designed for clear expense visualization and easy use.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
