@@ -86,7 +86,7 @@ function CatIcon({ cat, size = 18 }: { cat: Category; size?: number }) {
   );
 }
 
-type IncomeToggle = { enabled: boolean; day: number | "end" };
+type IncomeToggle = { enabled: boolean; day: number | "end"; amount: string };
 
 export default function Onboarding({ onDone }: Props) {
   const [step, setStep] = useState(0);
@@ -94,8 +94,8 @@ export default function Onboarding({ onDone }: Props) {
   const [savingsGoal, setSavingsGoal] = useState("");
   const [payday, setPayday] = useState<number | "end" | null>(25);
   const [withdrawalDay, setWithdrawalDay] = useState<number | "end" | null>(27);
-  const [furisode, setFurisode] = useState<IncomeToggle>({ enabled: true, day: 1 });
-  const [scholarship, setScholarship] = useState<IncomeToggle>({ enabled: false, day: 15 });
+  const [furisode, setFurisode] = useState<IncomeToggle>({ enabled: true, day: 1, amount: "" });
+  const [scholarship, setScholarship] = useState<IncomeToggle>({ enabled: false, day: 15, amount: "" });
   const [categories, setCategories] = useState<Category[]>(DEFAULT_CATEGORIES);
 
   function next() { setStep((s) => Math.min(s + 1, TOTAL_STEPS - 1)); }
@@ -103,8 +103,8 @@ export default function Onboarding({ onDone }: Props) {
 
   function finish() {
     const incomeSources: IncomeSource[] = [];
-    if (furisode.enabled) incomeSources.push({ id: "furisode", label: "仕送り", amount: 0, day: furisode.day });
-    if (scholarship.enabled) incomeSources.push({ id: "scholarship", label: "奨学金", amount: 0, day: scholarship.day });
+    if (furisode.enabled) incomeSources.push({ id: "furisode", label: "仕送り", amount: parseInt(furisode.amount) || 0, day: furisode.day });
+    if (scholarship.enabled) incomeSources.push({ id: "scholarship", label: "奨学金", amount: parseInt(scholarship.amount) || 0, day: scholarship.day });
 
     onDone({
       savings: parseInt(savings.replace(/,/g, "")) || 0,
@@ -216,7 +216,7 @@ export default function Onboarding({ onDone }: Props) {
                 収入の設定
               </h1>
               <p style={{ fontFamily: hand, fontSize: 14, color: "#a08060", marginTop: 4 }}>
-                振込日だけ教えてください
+                金額と振込日を教えてください
               </p>
             </div>
 
@@ -247,12 +247,27 @@ export default function Onboarding({ onDone }: Props) {
                 </div>
               </div>
               {furisode.enabled && (
-                <div className="flex flex-col gap-2">
-                  <p style={{ fontFamily: hand, fontSize: 13, color: "#a08060" }}>振込日</p>
-                  <DayPicker
-                    value={furisode.day}
-                    onChange={(v) => setFurisode((f) => ({ ...f, day: v ?? 1 }))}
-                  />
+                <div className="flex flex-col gap-3">
+                  <div>
+                    <p style={{ fontFamily: hand, fontSize: 13, color: "#a08060", marginBottom: 6 }}>月の金額（わかれば）</p>
+                    <div style={fieldBox} className="flex items-center gap-2">
+                      <span style={{ fontFamily: hand, fontSize: 15, color: "#a08060" }}>¥</span>
+                      <input
+                        style={inputStyle}
+                        type="number"
+                        placeholder="50000"
+                        value={furisode.amount}
+                        onChange={(e) => setFurisode((f) => ({ ...f, amount: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <p style={{ fontFamily: hand, fontSize: 13, color: "#a08060", marginBottom: 6 }}>振込日</p>
+                    <DayPicker
+                      value={furisode.day}
+                      onChange={(v) => setFurisode((f) => ({ ...f, day: v ?? 1 }))}
+                    />
+                  </div>
                 </div>
               )}
             </div>
@@ -284,12 +299,27 @@ export default function Onboarding({ onDone }: Props) {
                 </div>
               </div>
               {scholarship.enabled && (
-                <div className="flex flex-col gap-2">
-                  <p style={{ fontFamily: hand, fontSize: 13, color: "#a08060" }}>振込日</p>
-                  <DayPicker
-                    value={scholarship.day}
-                    onChange={(v) => setScholarship((f) => ({ ...f, day: v ?? 15 }))}
-                  />
+                <div className="flex flex-col gap-3">
+                  <div>
+                    <p style={{ fontFamily: hand, fontSize: 13, color: "#a08060", marginBottom: 6 }}>月の金額（わかれば）</p>
+                    <div style={fieldBox} className="flex items-center gap-2">
+                      <span style={{ fontFamily: hand, fontSize: 15, color: "#a08060" }}>¥</span>
+                      <input
+                        style={inputStyle}
+                        type="number"
+                        placeholder="30000"
+                        value={scholarship.amount}
+                        onChange={(e) => setScholarship((f) => ({ ...f, amount: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <p style={{ fontFamily: hand, fontSize: 13, color: "#a08060", marginBottom: 6 }}>振込日</p>
+                    <DayPicker
+                      value={scholarship.day}
+                      onChange={(v) => setScholarship((f) => ({ ...f, day: v ?? 15 }))}
+                    />
+                  </div>
                 </div>
               )}
             </div>

@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Bot, Camera, CheckCircle2, ChevronLeft, RefreshCw, AlertCircle } from "lucide-react";
+import { Bot, Camera, CheckCircle2, ChevronLeft, RefreshCw, AlertCircle, Image } from "lucide-react";
 import type { Category } from "../types";
 import { scanReceipt, type ReceiptResult } from "../lib/scanReceipt";
 
@@ -31,7 +31,10 @@ function CatIcon({ cat, active, size = 13 }: { cat: Category; active: boolean; s
 
 export default function ScanScreen({
   onDone, categories,
-}: { onDone: (catId: string, amount: number) => void; categories: Category[] }) {
+}: {
+  onDone: (catId: string, amount: number, extras?: { store?: string; pay?: string; memo?: string }) => void;
+  categories: Category[];
+}) {
   const [phase, setPhase] = useState<Phase>("upload");
   const [preview, setPreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -41,7 +44,8 @@ export default function ScanScreen({
   const [done, setDone] = useState(false);
   const [pay, setPay] = useState("電子マネー");
   const [error, setError] = useState<string | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
+  const galleryRef = useRef<HTMLInputElement>(null);
 
   const PAY = ["現金", "クレジットカード", "電子マネー", "QR決済"];
 
@@ -68,7 +72,7 @@ export default function ScanScreen({
   }
 
   function handleRegister() {
-    onDone(savedCatId, result.amount);
+    onDone(savedCatId, result.amount, { store: result.store, pay });
     setDone(true);
     setTimeout(() => {
       setDone(false);
@@ -140,7 +144,6 @@ export default function ScanScreen({
 
         <h1 style={{ fontFamily: hand, fontSize: 22, fontWeight: 600, color: "#5c4a2a" }}>内容の確認</h1>
 
-        {/* Fields */}
         <div className="rounded-[18px] overflow-hidden divide-y" style={{ border: "2px solid #ede0cc", boxShadow: "2px 3px 0px #ddc9a8" }}>
           <div className="px-4 py-3.5" style={{ background: "#fffdf7" }}>
             <p style={{ fontFamily: hand, fontSize: 11, color: "#a08060", marginBottom: 2 }}>店名</p>
@@ -168,7 +171,6 @@ export default function ScanScreen({
           </div>
         </div>
 
-        {/* Category */}
         <div className="rounded-[18px] p-4" style={{ background: "#fffdf7", border: "2px solid #ede0cc", boxShadow: "2px 3px 0px #ddc9a8" }}>
           <p style={{ fontFamily: hand, fontSize: 13, fontWeight: 600, color: "#5c4a2a", marginBottom: 10 }}>
             カテゴリ
@@ -194,7 +196,6 @@ export default function ScanScreen({
           </div>
         </div>
 
-        {/* Payment */}
         <div className="rounded-[18px] p-4" style={{ background: "#fffdf7", border: "2px solid #ede0cc", boxShadow: "2px 3px 0px #ddc9a8" }}>
           <p style={{ fontFamily: hand, fontSize: 13, fontWeight: 600, color: "#5c4a2a", marginBottom: 10 }}>支払い方法</p>
           <div className="flex flex-wrap gap-2">
@@ -216,7 +217,6 @@ export default function ScanScreen({
           </div>
         </div>
 
-        {/* Summary */}
         <div
           className="flex items-center gap-3 rounded-[16px] px-4 py-3"
           style={{ background: "#fffbe6", border: "2px solid #ffe082" }}
@@ -251,7 +251,6 @@ export default function ScanScreen({
           レシートを読み取る
         </p>
 
-        {/* Error banner */}
         {error && (
           <div
             className="w-full rounded-[14px] px-4 py-3 flex items-center gap-2"
@@ -262,12 +261,12 @@ export default function ScanScreen({
           </div>
         )}
 
+        {/* プレビュー or ドロップ エリア */}
         <div
-          onClick={() => inputRef.current?.click()}
           onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
           onDragLeave={() => setDragging(false)}
           onDrop={(e) => { e.preventDefault(); setDragging(false); const f = e.dataTransfer.files[0]; if (f) handleFile(f); }}
-          className="flex flex-col items-center justify-center cursor-pointer transition-all active:scale-95 rounded-[28px]"
+          className="flex flex-col items-center justify-center rounded-[28px]"
           style={{
             width: 220, height: 220,
             background: dragging ? "#fff9ec" : preview ? "transparent" : "#fffdf7",
@@ -281,18 +280,26 @@ export default function ScanScreen({
           ) : (
             <>
               <Camera size={56} color="#c0a080" strokeWidth={1.2} />
-              <p style={{ fontFamily: hand, fontSize: 14, color: "#a08060", marginTop: 12, textAlign: "center" }}>
-                タップして撮影<br />またはアップロード
+              <p style={{ fontFamily: hand, fontSize: 13, color: "#a08060", marginTop: 12, textAlign: "center" }}>
+                下のボタンから選んでください
               </p>
             </>
           )}
         </div>
 
+        {/* 隠しファイル入力 */}
         <input
-          ref={inputRef}
+          ref={cameraRef}
           type="file"
           accept="image/*"
           capture="environment"
+          className="hidden"
+          onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
+        />
+        <input
+          ref={galleryRef}
+          type="file"
+          accept="image/*"
           className="hidden"
           onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
         />
@@ -315,9 +322,24 @@ export default function ScanScreen({
             </button>
           </div>
         ) : (
-          <p style={{ fontFamily: hand, fontSize: 13, color: "#b0946a", textAlign: "center" }}>
-            ドラッグ＆ドロップでもOK
-          </p>
+          <div className="flex gap-3 w-full max-w-xs">
+            <button
+              onClick={() => cameraRef.current?.click()}
+              className="flex-1 py-3 rounded-[14px] flex flex-col items-center justify-center gap-1 transition-all active:scale-95"
+              style={{ fontFamily: hand, background: "#fffdf7", border: "2px solid #ede0cc", boxShadow: "2px 3px 0px #ddc9a8" }}
+            >
+              <Camera size={20} color="#a08060" strokeWidth={1.8} />
+              <span style={{ fontSize: 12, color: "#7a5c30" }}>カメラで撮る</span>
+            </button>
+            <button
+              onClick={() => galleryRef.current?.click()}
+              className="flex-1 py-3 rounded-[14px] flex flex-col items-center justify-center gap-1 transition-all active:scale-95"
+              style={{ fontFamily: hand, background: "#fffdf7", border: "2px solid #ede0cc", boxShadow: "2px 3px 0px #ddc9a8" }}
+            >
+              <Image size={20} color="#a08060" strokeWidth={1.8} />
+              <span style={{ fontSize: 12, color: "#7a5c30" }}>写真を選ぶ</span>
+            </button>
+          </div>
         )}
       </div>
 

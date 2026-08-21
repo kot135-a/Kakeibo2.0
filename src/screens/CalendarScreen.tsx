@@ -1,67 +1,9 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, Inbox, CalendarDays, Banknote, Smile, BookOpen, Heart, Train } from "lucide-react";
+import type { Expense } from "../types";
 
 const hand = "var(--font-hand)";
 function fmt(n: number) { return n.toLocaleString("ja-JP"); }
-
-type Expense = {
-  id: string;
-  label: string;
-  catId: string;
-  catColor: string;
-  amount: number;
-  pay: string;
-  memo?: string;
-};
-
-type DayRecord = { [dateKey: string]: Expense[] };
-
-const MOCK: DayRecord = {
-  "2026-08-01": [
-    { id: "1", label: "日常生活", catId: "daily", catColor: "#55efc4", amount: 1480, pay: "電子マネー", memo: "シャンプー・コンディショナー" },
-  ],
-  "2026-08-03": [
-    { id: "2", label: "ごはん", catId: "food", catColor: "#ff9f43", amount: 648, pay: "電子マネー", memo: "セブン　ランチ" },
-    { id: "3", label: "ごはん", catId: "food", catColor: "#ff9f43", amount: 1200, pay: "現金", memo: "夜ご飯　定食屋" },
-  ],
-  "2026-08-05": [
-    { id: "4", label: "交通費", catId: "transport", catColor: "#a29bfe", amount: 320, pay: "QR決済" },
-  ],
-  "2026-08-07": [
-    { id: "5", label: "あそび", catId: "fun", catColor: "#fd79a8", amount: 2500, pay: "クレジットカード", memo: "カラオケ　友達と" },
-  ],
-  "2026-08-10": [
-    { id: "6", label: "ごはん", catId: "food", catColor: "#ff9f43", amount: 780, pay: "現金", memo: "コンビニ" },
-    { id: "7", label: "日常生活", catId: "daily", catColor: "#55efc4", amount: 398, pay: "電子マネー" },
-  ],
-  "2026-08-12": [
-    { id: "8", label: "学校生活", catId: "school", catColor: "#74b9ff", amount: 3200, pay: "クレジットカード", memo: "教科書" },
-  ],
-  "2026-08-14": [
-    { id: "9", label: "交通費", catId: "transport", catColor: "#a29bfe", amount: 860, pay: "QR決済", memo: "帰省の電車" },
-    { id: "10", label: "ごはん", catId: "food", catColor: "#ff9f43", amount: 1560, pay: "現金", memo: "外食　家族と" },
-  ],
-  "2026-08-15": [
-    { id: "11", label: "あそび", catId: "fun", catColor: "#fd79a8", amount: 1800, pay: "QR決済", memo: "映画" },
-  ],
-  "2026-08-18": [
-    { id: "12", label: "ごはん", catId: "food", catColor: "#ff9f43", amount: 920, pay: "電子マネー" },
-  ],
-  "2026-08-19": [
-    { id: "13", label: "日常生活", catId: "daily", catColor: "#55efc4", amount: 2180, pay: "クレジットカード", memo: "薬局" },
-    { id: "14", label: "交通費", catId: "transport", catColor: "#a29bfe", amount: 210, pay: "QR決済" },
-  ],
-  "2026-08-20": [
-    { id: "15", label: "ごはん", catId: "food", catColor: "#ff9f43", amount: 648, pay: "電子マネー", memo: "セブン　ランチ" },
-  ],
-  "2026-08-22": [
-    { id: "16", label: "学校生活", catId: "school", catColor: "#74b9ff", amount: 550, pay: "現金", memo: "コピー代" },
-  ],
-  "2026-08-25": [
-    { id: "17", label: "あそび", catId: "fun", catColor: "#fd79a8", amount: 4200, pay: "クレジットカード", memo: "ゲーム" },
-    { id: "18", label: "ごはん", catId: "food", catColor: "#ff9f43", amount: 1100, pay: "現金", memo: "ラーメン" },
-  ],
-};
 
 function CatIconById({ catId, color, size = 16 }: { catId: string; color: string; size?: number }) {
   const props = { size, color, strokeWidth: 1.8 };
@@ -75,20 +17,27 @@ function CatIconById({ catId, color, size = 16 }: { catId: string; color: string
 
 const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
 
-export default function CalendarScreen() {
-  const today = new Date(2026, 7, 20);
-  const [year, setYear] = useState(today.getFullYear());
-  const [month, setMonth] = useState(today.getMonth());
-  const [selected, setSelected] = useState<string>("2026-08-20");
+export default function CalendarScreen({ expenses }: { expenses: Expense[] }) {
+  const realToday = new Date();
+  const [year, setYear] = useState(realToday.getFullYear());
+  const [month, setMonth] = useState(realToday.getMonth());
+  const [selected, setSelected] = useState<string>("");
+
+  // expenses を日付 → 配列 のマップに変換
+  const dayMap = expenses.reduce<Record<string, Expense[]>>((acc, e) => {
+    if (!acc[e.date]) acc[e.date] = [];
+    acc[e.date].push(e);
+    return acc;
+  }, {});
 
   function prevMonth() {
-    if (month === 0) { setYear(y => y - 1); setMonth(11); }
-    else setMonth(m => m - 1);
+    if (month === 0) { setYear((y) => y - 1); setMonth(11); }
+    else setMonth((m) => m - 1);
     setSelected("");
   }
   function nextMonth() {
-    if (month === 11) { setYear(y => y + 1); setMonth(0); }
-    else setMonth(m => m + 1);
+    if (month === 11) { setYear((y) => y + 1); setMonth(0); }
+    else setMonth((m) => m + 1);
     setSelected("");
   }
 
@@ -101,16 +50,15 @@ export default function CalendarScreen() {
     return `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
   }
 
-  const selectedExpenses = selected ? (MOCK[selected] || []) : [];
+  const todayStr = `${realToday.getFullYear()}-${String(realToday.getMonth() + 1).padStart(2, "0")}-${String(realToday.getDate()).padStart(2, "0")}`;
+
+  const isToday = (d: number) => dateKey(d) === todayStr;
+
+  const selectedExpenses = selected ? (dayMap[selected] || []) : [];
   const selectedTotal = selectedExpenses.reduce((s, e) => s + e.amount, 0);
 
-  const isToday = (d: number) => {
-    const t = new Date();
-    return d === t.getDate() && month === t.getMonth() && year === t.getFullYear();
-  };
-
   return (
-    <div className="max-w-lg mx-auto px-4 py-5 flex flex-col gap-4">
+    <div className="max-w-lg mx-auto px-4 py-3 flex flex-col gap-3">
 
       {/* Calendar card */}
       <div
@@ -152,9 +100,9 @@ export default function CalendarScreen() {
           {cells.map((d, i) => {
             if (!d) return <div key={`empty-${i}`} />;
             const key = dateKey(d);
-            const hasData = !!MOCK[key];
+            const hasData = !!dayMap[key];
             const isSelected = selected === key;
-            const dayTotal = hasData ? MOCK[key].reduce((s, e) => s + e.amount, 0) : 0;
+            const dayTotal = hasData ? dayMap[key].reduce((s, e) => s + e.amount, 0) : 0;
             const col = i % 7;
             const isSun = col === 0;
             const isSat = col === 6;
@@ -168,7 +116,7 @@ export default function CalendarScreen() {
                   background: isSelected ? "#f5a623" : isToday(d) ? "#ffe066" : "transparent",
                   border: isSelected ? "2px solid #e8921a" : isToday(d) ? "2px solid #d4a800" : "2px solid transparent",
                   boxShadow: isSelected ? "1px 2px 0px #e8921a" : "none",
-                  minHeight: 50,
+                  minHeight: 42,
                 }}
               >
                 <span style={{ fontSize: 14, fontWeight: isSelected || isToday(d) ? 600 : 400, color: isSelected ? "white" : isSun ? "#e74c3c" : isSat ? "#3498db" : "#3d2e00", lineHeight: 1, fontFamily: hand }}>
@@ -222,7 +170,9 @@ export default function CalendarScreen() {
                     <CatIconById catId={exp.catId} color={exp.catColor} size={18} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p style={{ fontSize: 13, fontWeight: 600, color: "#3d2e00", fontFamily: hand }}>{exp.label}</p>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: "#3d2e00", fontFamily: hand }}>
+                      {exp.store || exp.catLabel}
+                    </p>
                     <div className="flex items-center gap-1.5 mt-0.5">
                       <span style={{ fontSize: 10, color: "#a08060", fontFamily: hand }}>{exp.pay}</span>
                       {exp.memo && (

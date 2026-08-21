@@ -23,6 +23,18 @@ export type UserProfile = {
   categories: Category[];
 };
 
+export type Expense = {
+  id: string;
+  date: string; // YYYY-MM-DD
+  catId: string;
+  catLabel: string;
+  catColor: string;
+  amount: number;
+  memo?: string;
+  store?: string;
+  pay: string;
+};
+
 // "recorded" = 支出を記録した日, "none" = お金を使わなかった日
 export type DailyLog = "recorded" | "none";
 export type DailyLogs = Record<string, DailyLog>; // キー: "YYYY-MM-DD"
@@ -45,11 +57,11 @@ export function todayKey(): string {
 }
 
 export const DEFAULT_CATEGORIES: Category[] = [
-  { id: "food", label: "ごはん", emoji: "🍙", budget: 20000, spent: 12400, color: "#ff9f43" },
-  { id: "fun", label: "あそび", emoji: "🎮", budget: 10000, spent: 11200, color: "#fd79a8" },
-  { id: "school", label: "学校生活", emoji: "📚", budget: 5000, spent: 2800, color: "#74b9ff" },
-  { id: "daily", label: "日常生活", emoji: "🧴", budget: 8000, spent: 3100, color: "#55efc4" },
-  { id: "transport", label: "交通費", emoji: "🚃", budget: 6000, spent: 4200, color: "#a29bfe" },
+  { id: "food", label: "ごはん", emoji: "🍙", budget: 20000, spent: 0, color: "#ff9f43" },
+  { id: "fun", label: "あそび", emoji: "🎮", budget: 10000, spent: 0, color: "#fd79a8" },
+  { id: "school", label: "学校生活", emoji: "📚", budget: 5000, spent: 0, color: "#74b9ff" },
+  { id: "daily", label: "日常生活", emoji: "🧴", budget: 8000, spent: 0, color: "#55efc4" },
+  { id: "transport", label: "交通費", emoji: "🚃", budget: 6000, spent: 0, color: "#a29bfe" },
 ];
 
 export const DEFAULT_INCOME: IncomeSource[] = [

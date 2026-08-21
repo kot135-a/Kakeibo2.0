@@ -21,7 +21,10 @@ function CatIcon({ cat, active, size = 14 }: { cat: Category; active: boolean; s
 export default function AddExpenseScreen({
   categories,
   onSubmit,
-}: { categories: Category[]; onSubmit: (catId: string, amount: number) => void }) {
+}: {
+  categories: Category[];
+  onSubmit: (catId: string, amount: number, extras?: { memo?: string; store?: string; pay?: string }) => void;
+}) {
   const [selectedCat, setSelectedCat] = useState(categories[0]?.id || "");
   const [amount, setAmount] = useState("");
   const [memo, setMemo] = useState("");
@@ -38,7 +41,7 @@ export default function AddExpenseScreen({
   function handleSubmit() {
     const num = parseInt(amount);
     if (!num || !selectedCat) return;
-    onSubmit(selectedCat, num);
+    onSubmit(selectedCat, num, { memo: memo || undefined });
     setDone(true);
     setTimeout(() => { setDone(false); setAmount(""); setMemo(""); }, 900);
   }

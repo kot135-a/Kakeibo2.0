@@ -6,33 +6,17 @@ import ScanScreen from "./screens/ScanScreen";
 import ChartsScreen from "./screens/ChartsScreen";
 import AddExpenseScreen from "./screens/AddExpenseScreen";
 import CalendarScreen from "./screens/CalendarScreen";
-import type { UserProfile, Category, DailyLogs, Expense } from "./types";
-import { DEFAULT_CATEGORIES, calcStreak, todayKey } from "./types";
+import type { UserProfile, Category, DailyLogs } from "./types";
+import { DEFAULT_CATEGORIES, DEFAULT_INCOME, calcStreak, todayKey } from "./types";
 
 type Tab = "budget" | "scan" | "charts" | "calendar";
 
 const TABS: { id: Tab; Icon: React.ElementType; label: string }[] = [
-  { id: "budget",   Icon: Home,         label: "ホーム" },
-  { id: "scan",     Icon: Camera,       label: "読み取り" },
-  { id: "charts",   Icon: BarChart2,    label: "グラフ" },
+  { id: "budget", Icon: Home, label: "ホーム" },
+  { id: "scan", Icon: Camera, label: "読み取り" },
+  { id: "charts", Icon: BarChart2, label: "グラフ" },
   { id: "calendar", Icon: CalendarDays, label: "カレンダー" },
 ];
-
-const LS = {
-  profile:    "zbkakeibo_profile",
-  categories: "zbkakeibo_categories",
-  dailylogs:  "zbkakeibo_dailylogs",
-  expenses:   "zbkakeibo_expenses",
-};
-
-function loadLS<T>(key: string, fallback: T): T {
-  try {
-    const v = localStorage.getItem(key);
-    return v ? (JSON.parse(v) as T) : fallback;
-  } catch {
-    return fallback;
-  }
-}
 
 // コインパーティクル
 type Coin = { id: number; tx: number; ty: number; r: number; delay: number; x: number; y: number };
@@ -70,7 +54,7 @@ function MoneyFlyOverlay({ onDone }: { onDone: () => void }) {
         >
           <div
             style={{
-              width: 20, height: 20, borderRadius: "50%",
+              width: 30, height: 30, borderRadius: "50%",
               background: "radial-gradient(circle at 35% 35%, #ffe066, #f5a623)",
               border: "2px solid #d4a800",
               boxShadow: "0 2px 6px rgba(245,166,35,0.5)",
@@ -82,12 +66,13 @@ function MoneyFlyOverlay({ onDone }: { onDone: () => void }) {
   );
 }
 
+// 貯金箱アニメーション
 function PiggyBankOverlay({ onDone }: { onDone: () => void }) {
   const coins = Array.from({ length: 5 }, (_, i) => ({
     id: i,
-    fromY: -(80 + i * 18),
-    delay: i * 0.1,
-    x: (Math.random() - 0.5) * 30,
+    fromY: -(180 + i * 25),
+    delay: i * 0.12,
+    x: (Math.random() - 0.5) * 100,
   }));
 
   useEffect(() => {
@@ -98,6 +83,7 @@ function PiggyBankOverlay({ onDone }: { onDone: () => void }) {
   return (
     <div className="fixed inset-0 z-[200] pointer-events-none flex items-center justify-center">
       <div className="relative flex flex-col items-center">
+        {/* コインが落ちてくる */}
         {coins.map((c) => (
           <div
             key={c.id}
@@ -111,23 +97,25 @@ function PiggyBankOverlay({ onDone }: { onDone: () => void }) {
           >
             <div
               style={{
-                width: 16, height: 16, borderRadius: "50%",
+                width: 24, height: 24, borderRadius: "50%",
                 background: "radial-gradient(circle at 35% 35%, #ffe066, #f5a623)",
                 border: "2px solid #d4a800",
+                boxShadow: "1px 2px 0px #d4a800",
               }}
             />
           </div>
         ))}
+        {/* 貯金箱 */}
         <div className="piggy-bounce" style={{ animationDelay: "0.3s" }}>
           <div
             style={{
-              width: 88, height: 88, borderRadius: 24,
+              width: 200, height: 200, borderRadius: 24,
               background: "#ffe066", border: "3px solid #d4a800",
               boxShadow: "3px 4px 0px #d4a800",
               display: "flex", alignItems: "center", justifyContent: "center",
             }}
           >
-            <PiggyBank size={48} color="#d4a800" strokeWidth={1.5} />
+            <PiggyBank size={130} color="#d4a800" strokeWidth={1.5} />
           </div>
         </div>
         <p
@@ -148,57 +136,22 @@ function PiggyBankOverlay({ onDone }: { onDone: () => void }) {
 }
 
 export default function App() {
-  const [profile, setProfile] = useState<UserProfile | null>(() => loadLS<UserProfile | null>(LS.profile, null));
-  const [categories, setCategories] = useState<Category[]>(() => loadLS<Category[]>(LS.categories, DEFAULT_CATEGORIES));
-  const [dailyLogs, setDailyLogs] = useState<DailyLogs>(() => loadLS<DailyLogs>(LS.dailylogs, {}));
-  const [expenses, setExpenses] = useState<Expense[]>(() => loadLS<Expense[]>(LS.expenses, []));
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [tab, setTab] = useState<Tab>("budget");
+  const [categories, setCategories] = useState<Category[]>(DEFAULT_CATEGORIES);
   const [showAdd, setShowAdd] = useState(false);
+  const [dailyLogs, setDailyLogs] = useState<DailyLogs>({});
   const [showMoneyFly, setShowMoneyFly] = useState(false);
   const [showPiggy, setShowPiggy] = useState(false);
-
-  // localStorage への永続化
-  useEffect(() => {
-    if (profile) localStorage.setItem(LS.profile, JSON.stringify(profile));
-  }, [profile]);
-  useEffect(() => {
-    localStorage.setItem(LS.categories, JSON.stringify(categories));
-  }, [categories]);
-  useEffect(() => {
-    localStorage.setItem(LS.dailylogs, JSON.stringify(dailyLogs));
-  }, [dailyLogs]);
-  useEffect(() => {
-    localStorage.setItem(LS.expenses, JSON.stringify(expenses));
-  }, [expenses]);
 
   const streak = calcStreak(dailyLogs);
 
   function handleOnboardingDone(p: UserProfile) {
-    const cats = p.categories.map((c) => ({ ...c, spent: 0 }));
     setProfile(p);
-    setCategories(cats);
-    localStorage.setItem(LS.profile, JSON.stringify(p));
-    localStorage.setItem(LS.categories, JSON.stringify(cats));
+    setCategories(p.categories.map((c) => ({ ...c, spent: 0 })));
   }
 
-  function addExpense(
-    catId: string,
-    amount: number,
-    extras?: { memo?: string; store?: string; pay?: string },
-  ) {
-    const cat = categories.find((c) => c.id === catId);
-    const newExpense: Expense = {
-      id: String(Date.now()),
-      date: todayKey(),
-      catId,
-      catLabel: cat?.label ?? catId,
-      catColor: cat?.color ?? "#aaa",
-      amount,
-      memo: extras?.memo,
-      store: extras?.store,
-      pay: extras?.pay ?? "現金",
-    };
-    setExpenses((prev) => [...prev, newExpense]);
+  function addExpense(catId: string, amount: number) {
     setCategories((prev) =>
       prev.map((c) => (c.id === catId ? { ...c, spent: c.spent + amount } : c))
     );
@@ -223,8 +176,9 @@ export default function App() {
       className="min-h-screen flex flex-col"
       style={{ background: "#fdf8f0", fontFamily: "var(--font-hand)" }}
     >
+      {/* アニメーションオーバーレイ */}
       {showMoneyFly && <MoneyFlyOverlay onDone={() => setShowMoneyFly(false)} />}
-      {showPiggy    && <PiggyBankOverlay onDone={() => setShowPiggy(false)} />}
+      {showPiggy && <PiggyBankOverlay onDone={() => setShowPiggy(false)} />}
 
       {/* Header */}
       <header
@@ -233,7 +187,7 @@ export default function App() {
       >
         <div className="max-w-lg mx-auto px-5 h-14 flex items-center justify-between">
           <span style={{ fontFamily: "var(--font-hand)", fontSize: 17, color: "#5c4a2a", fontWeight: 600 }}>
-            ズボラ家計簿
+            {profile.name ? `${profile.name}の家計簿` : "ズボラ家計簿"}
           </span>
           <div className="flex items-center gap-2">
             {streak > 0 && (
@@ -271,9 +225,9 @@ export default function App() {
             onMarkNoSpend={markNoSpend}
           />
         )}
-        {tab === "scan"     && <ScanScreen onDone={addExpense} categories={categories} />}
-        {tab === "charts"   && <ChartsScreen categories={categories} profile={profile} />}
-        {tab === "calendar" && <CalendarScreen expenses={expenses} />}
+        {tab === "scan" && <ScanScreen onDone={addExpense} categories={categories} />}
+        {tab === "charts" && <ChartsScreen categories={categories} profile={profile} />}
+        {tab === "calendar" && <CalendarScreen />}
       </main>
 
       {/* Floating add button */}

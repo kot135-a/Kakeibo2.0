@@ -43,8 +43,9 @@ function BudgetBar({ cat, onAdd }: { cat: Category; onAdd: () => void }) {
   const barColor = pct > 50 ? cat.color : pct > 20 ? "#ff9f43" : "#ff6b6b";
 
   return (
-    <div
-      className={`rounded-[18px] p-4 transition-all ${cracking ? "animate-crack" : ""}`}
+    <button
+      onClick={onAdd}
+      className={`w-full text-left rounded-[18px] p-4 transition-all active:scale-[0.98] ${cracking ? "animate-crack" : ""}`}
       style={{
         background: shattered ? "#fff0f0" : "#fffdf7",
         border: shattered ? "2px solid #ffb3b3" : "2px solid #ede0cc",
@@ -63,19 +64,7 @@ function BudgetBar({ cat, onAdd }: { cat: Category; onAdd: () => void }) {
             </span>
           )}
         </div>
-        <button
-          onClick={onAdd}
-          className="flex items-center gap-1 px-2.5 py-1 rounded-full transition-all active:scale-95"
-          style={{
-            fontFamily: hand, fontSize: 12,
-            background: "#f5a623", color: "white",
-            border: "1.5px solid #e8921a",
-            boxShadow: "1px 1.5px 0px #e8921a",
-          }}
-        >
-          <Plus size={11} strokeWidth={2.5} />
-          追加
-        </button>
+        <Plus size={16} color="#f5a623" strokeWidth={2.5} />
       </div>
 
       {!shattered ? (
@@ -99,7 +88,7 @@ function BudgetBar({ cat, onAdd }: { cat: Category; onAdd: () => void }) {
           {over ? `−¥${fmt(-remaining)} オーバー` : `残り ¥${fmt(remaining)}`}
         </span>
       </div>
-    </div>
+    </button>
   );
 }
 
@@ -122,10 +111,10 @@ export default function BudgetScreen({
   const daysPassed = today.getDate();
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-5 flex flex-col gap-4">
+    <div className="max-w-lg mx-auto px-4 py-3 flex flex-col gap-3">
       {/* Overall summary card */}
       <div
-        className="rounded-[20px] p-5 relative overflow-hidden"
+        className="rounded-[20px] p-4 relative overflow-hidden"
         style={{ background: "linear-gradient(145deg, #ffe066 0%, #ffcc02 100%)", boxShadow: "3px 4px 0px #d4a800", transform: "rotate(-0.3deg)" }}
       >
         <div className="absolute right-4 top-3 opacity-10">
@@ -134,7 +123,7 @@ export default function BudgetScreen({
         <p style={{ fontFamily: hand, fontSize: 13, color: "#7a5c00" }}>
           {today.getMonth() + 1}月の残り予算
         </p>
-        <p style={{ fontFamily: hand, fontSize: 42, fontWeight: 600, color: "#3d2e00", lineHeight: 1.1 }}>
+        <p style={{ fontFamily: hand, fontSize: 36, fontWeight: 600, color: "#3d2e00", lineHeight: 1.1 }}>
           {totalRemaining >= 0 ? `¥${fmt(totalRemaining)}` : `−¥${fmt(-totalRemaining)}`}
         </p>
         <div className="mt-3 h-3 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.5)" }}>
@@ -223,7 +212,7 @@ export default function BudgetScreen({
         style={{ background: "#fffdf7", border: "2px solid #ede0cc", boxShadow: "2px 3px 0px #ddc9a8" }}
       >
         <p style={{ fontFamily: hand, fontSize: 14, fontWeight: 600, color: "#5c4a2a", marginBottom: 8 }}>今月の収入</p>
-        {profile.incomeSources.filter((s) => s.amount > 0).map((src) => (
+        {profile.incomeSources.map((src) => (
           <div key={src.id} className="flex justify-between items-center py-1.5">
             <span style={{ fontFamily: hand, fontSize: 13, color: "#7a5c30" }}>{src.label}</span>
             <span style={{ fontFamily: hand, fontSize: 13, fontWeight: 600, color: "#3d2e00" }}>
