@@ -173,7 +173,7 @@ export default function Onboarding({ onDone }: Props) {
               <p style={{ fontFamily: hand, fontSize: 13, color: "#a08060", marginBottom: 4 }}>今月の貯金目標</p>
               <div style={fieldBox} className="flex items-center gap-2">
                 <span style={{ fontFamily: hand, fontSize: 16, color: "#a08060" }}>¥</span>
-                <input style={inputStyle} type="number" placeholder="10000" value={savingsGoal} onChange={(e) => setSavingsGoal(e.target.value)} />
+                <input style={inputStyle} type="number" placeholder="0" value={savingsGoal} onChange={(e) => setSavingsGoal(e.target.value)} />
               </div>
             </div>
           </div>
