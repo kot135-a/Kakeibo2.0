@@ -113,7 +113,7 @@ export default function ChartsScreen({ categories, profile }: { categories: Cate
         </div>
       </div>
 
-      {/* Weekly bar chart */}
+      {/* Weekly bar chart 
       <div className="rounded-[18px] p-4" style={{ background: "#fffdf7", border: "2px solid #ede0cc", boxShadow: "2px 3px 0px #ddc9a8" }}>
         <p style={{ fontFamily: hand, fontSize: 15, fontWeight: 600, color: "#5c4a2a", marginBottom: 12 }}>今週の支出</p>
         <div className="flex items-end justify-between gap-1" style={{ height: 100 }}>
@@ -139,6 +139,7 @@ export default function ChartsScreen({ categories, profile }: { categories: Cate
           })}
         </div>
       </div>
+      */}
     </div>
   );
 }
