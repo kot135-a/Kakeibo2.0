@@ -76,12 +76,12 @@ function StepDot({ total, current }: { total: number; current: number }) {
 function CatIcon({ cat, size = 18 }: { cat: Category; size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={cat.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      {cat.id === "food"      && <><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></>}
-      {cat.id === "fun"       && <><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></>}
-      {cat.id === "school"    && <><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></>}
-      {cat.id === "daily"     && <><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></>}
-      {cat.id === "transport" && <><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></>}
-      {!["food","fun","school","daily","transport"].includes(cat.id) && <circle cx="12" cy="12" r="8"/>}
+      {cat.id === "food" && <><path d="M18 8h1a4 4 0 0 1 0 8h-1" /><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" /><line x1="6" y1="1" x2="6" y2="4" /><line x1="10" y1="1" x2="10" y2="4" /><line x1="14" y1="1" x2="14" y2="4" /></>}
+      {cat.id === "fun" && <><circle cx="12" cy="12" r="10" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /><line x1="9" y1="9" x2="9.01" y2="9" /><line x1="15" y1="9" x2="15.01" y2="9" /></>}
+      {cat.id === "school" && <><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></>}
+      {cat.id === "daily" && <><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></>}
+      {cat.id === "transport" && <><rect x="1" y="3" width="15" height="13" /><polygon points="16 8 20 8 23 11 23 16 16 16 16 8" /><circle cx="5.5" cy="18.5" r="2.5" /><circle cx="18.5" cy="18.5" r="2.5" /></>}
+      {!["food", "fun", "school", "daily", "transport"].includes(cat.id) && <circle cx="12" cy="12" r="8" />}
     </svg>
   );
 }
@@ -162,7 +162,7 @@ export default function Onboarding({ onDone }: Props) {
               </p>
             </div>
             <div style={card}>
-              <p style={{ fontFamily: hand, fontSize: 13, color: "#a08060", marginBottom: 4 }}>いまの口座残高</p>
+              <p style={{ fontFamily: hand, fontSize: 13, color: "#a08060", marginBottom: 4 }}>いまの全財産</p>
               <div style={fieldBox} className="flex items-center gap-2">
                 <span style={{ fontFamily: hand, fontSize: 16, color: "#a08060" }}>¥</span>
                 <input style={inputStyle} type="number" placeholder="0" value={savings} onChange={(e) => setSavings(e.target.value)} />
@@ -383,7 +383,7 @@ export default function Onboarding({ onDone }: Props) {
             </div>
             <div style={{ ...card, width: "100%" }} className="flex flex-col gap-2">
               {[
-                { label: "口座残高", value: `¥${parseInt(savings) ? parseInt(savings).toLocaleString("ja-JP") : 0}` },
+                { label: "残高", value: `¥${parseInt(savings) ? parseInt(savings).toLocaleString("ja-JP") : 0}` },
                 { label: "貯金目標", value: `月 ¥${parseInt(savingsGoal) ? parseInt(savingsGoal).toLocaleString("ja-JP") : 0}` },
                 { label: "給料日", value: payday === null ? "設定なし" : payday === "end" ? "月末" : `毎月${payday}日` },
                 { label: "引き落とし日", value: withdrawalDay === null ? "設定なし" : withdrawalDay === "end" ? "月末" : `毎月${withdrawalDay}日` },
