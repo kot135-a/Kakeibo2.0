@@ -1,13 +1,10 @@
+import type { IncomingMessage, ServerResponse } from "node:http";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-// Vercel Serverless Function
+// Vercel Serverless Function（Node.js形式: (req, res) => void）
 // これはブラウザには配信されず、Vercelのサーバー上でだけ実行されます。
 // そのため、ここで読み込む GEMINI_API_KEY はブラウザ側に一切露出しません。
 // （VITE_ を付けないことで Vite のクライアントバンドルにも含まれません）
-
-export const config = {
-  runtime: "nodejs",
-};
 
 const CATEGORY_HINT = `
 カテゴリは以下から最も適切なものを1つ選んでください：
@@ -18,33 +15,33 @@ const CATEGORY_HINT = `
 - transport（電車・バス・タクシー・ガソリン）
 `.trim();
 
-export default async function handler(req: Request): Promise<Response> {
+export default async function handler(req: IncomingMessage, res: ServerResponse): Promise<void> {
   if (req.method !== "POST") {
-    return json({ error: "Method Not Allowed" }, 405);
+    return send(res, 405, { error: "Method Not Allowed" });
   }
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    return json({ error: "サーバー側に GEMINI_API_KEY が設定されていません" }, 500);
+    return send(res, 500, { error: "サーバー側に GEMINI_API_KEY が設定されていません" });
   }
 
   let body: { imageBase64?: string; mimeType?: string };
   try {
-    body = await req.json();
+    body = await readJsonBody(req);
   } catch {
-    return json({ error: "リクエストボディの形式が不正です" }, 400);
+    return send(res, 400, { error: "リクエストボディの形式が不正です" });
   }
 
   const { imageBase64, mimeType } = body;
   if (!imageBase64 || !mimeType) {
-    return json({ error: "imageBase64 と mimeType は必須です" }, 400);
+    return send(res, 400, { error: "imageBase64 と mimeType は必須です" });
   }
   if (!["image/jpeg", "image/png", "image/webp"].includes(mimeType)) {
-    return json({ error: "対応していない画像形式です" }, 400);
+    return send(res, 400, { error: "対応していない画像形式です" });
   }
   // 大きすぎるアップロードを拒否（base64はおよそ元サイズの1.37倍）
   if (imageBase64.length > 8_000_000) {
-    return json({ error: "画像サイズが大きすぎます" }, 413);
+    return send(res, 413, { error: "画像サイズが大きすぎます" });
   }
 
   try {
@@ -97,17 +94,38 @@ ${CATEGORY_HINT}
         : "現金",
     };
 
-    return json(safeResult, 200);
+    return send(res, 200, safeResult);
   } catch (err) {
     console.error("scan-receipt error:", err);
-    return json({ error: "AIの解析に失敗しました" }, 502);
+    return send(res, 502, { error: "AIの解析に失敗しました" });
   }
 }
 
-function json(data: unknown, status: number): Response {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { "Content-Type": "application/json" },
+function send(res: ServerResponse, status: number, data: unknown): void {
+  res.statusCode = status;
+  res.setHeader("Content-Type", "application/json");
+  res.end(JSON.stringify(data));
+}
+
+function readJsonBody(req: IncomingMessage): Promise<any> {
+  return new Promise((resolve, reject) => {
+    let raw = "";
+    req.on("data", (chunk) => {
+      raw += chunk;
+      // 過大なボディを早めに拒否（DoS対策）
+      if (raw.length > 12_000_000) {
+        reject(new Error("payload too large"));
+        req.destroy();
+      }
+    });
+    req.on("end", () => {
+      try {
+        resolve(raw ? JSON.parse(raw) : {});
+      } catch (e) {
+        reject(e);
+      }
+    });
+    req.on("error", reject);
   });
 }
 
